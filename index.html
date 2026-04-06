@@ -406,7 +406,7 @@
     </div>
 
     <p class="note">
-      <strong>Note:</strong> A normal website sends welcome email from a server (or a service like SendGrid). This page runs only in your browser, so after a successful sign-up you see a simulated inbox with the same message that would be emailed. Data is stored in <code>localStorage</code> so duplicate emails persist across refreshes. Removing a sample row hides it until you clear site data.
+      <strong>Run the app:</strong> from the <code>signup-server</code> folder run <code>npm install</code> then <code>npm start</code>, then open <code>http://localhost:3000/index.html</code>. Sign-ups are stored in SQLite (<code>signup-server/signup.db</code>). Duplicate emails are rejected by the database. Welcome email is still simulated in the browser; real mail needs a provider on the server.
     </p>
   </div>
 
@@ -426,70 +426,15 @@
 
   <script>
     (function () {
-      const STORAGE_KEY = "interactive_signup_users_v1";
-      const HIDDEN_DEMOS_KEY = "interactive_signup_hidden_demos_v1";
-
-      const DUMMY_ROWS = [
-        { username: "jdoe", firstName: "Jane", lastName: "Doe", email: "jane.doe@example.com", isDemo: true },
-        { username: "msmith", firstName: "Marcus", lastName: "Smith", email: "marcus.smith@example.com", isDemo: true },
-        { username: "klee", firstName: "Kim", lastName: "Lee", email: "kim.lee@example.com", isDemo: true },
-        { username: "adev", firstName: "Alex", lastName: "Rivera", email: "alex.rivera@example.com", isDemo: true },
-      ];
-
-      function loadRegistered() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return [];
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      }
-
-      function saveRegistered(list) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      }
-
-      function loadHiddenDemos() {
-        try {
-          const raw = localStorage.getItem(HIDDEN_DEMOS_KEY);
-          if (!raw) return new Set();
-          const arr = JSON.parse(raw);
-          return new Set(Array.isArray(arr) ? arr.map(normalizeEmail) : []);
-        } catch {
-          return new Set();
-        }
-      }
-
-      function saveHiddenDemos(set) {
-        localStorage.setItem(HIDDEN_DEMOS_KEY, JSON.stringify([...set]));
-      }
+      let usersCache = [];
 
       function normalizeEmail(email) {
         return String(email).trim().toLowerCase();
       }
 
-      const DUMMY_EMAIL_SET = new Set(DUMMY_ROWS.map((r) => normalizeEmail(r.email)));
-
-      function visibleDummyRows() {
-        const hidden = loadHiddenDemos();
-        return DUMMY_ROWS.filter((r) => !hidden.has(normalizeEmail(r.email))).map((r) => ({
-          ...r,
-          isDemo: true,
-        }));
-      }
-
-      function getAllRows() {
-        const registered = loadRegistered().map((u) => ({ ...u, isDemo: false }));
-        return [...visibleDummyRows(), ...registered];
-      }
-
-      function emailExists(email) {
+      function emailExistsInCache(email) {
         const n = normalizeEmail(email);
-        if (loadRegistered().some((u) => normalizeEmail(u.email) === n)) return true;
-        if (!DUMMY_EMAIL_SET.has(n)) return false;
-        return !loadHiddenDemos().has(n);
+        return usersCache.some((u) => normalizeEmail(u.email) === n);
       }
 
       const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -532,14 +477,24 @@
         formAlert.textContent = "";
       }
 
+      function escapeHtml(s) {
+        const d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function escapeAttr(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+      }
+
       function renderTable() {
-        const rows = getAllRows();
+        const rows = usersCache;
         memberBody.innerHTML = rows
-          .map((r, i) => {
+          .map((r) => {
             const tag = r.isDemo
               ? '<span class="tag tag-demo">sample</span>'
               : '<span class="tag tag-new">signed up</span>';
-            const cb = `<input type="checkbox" class="row-cb" data-email="${escapeAttr(r.email)}" aria-label="Select ${escapeAttr(r.username)}" />`;
+            const cb = `<input type="checkbox" class="row-cb" data-id="${r.id}" data-email="${escapeAttr(r.email)}" aria-label="Select ${escapeAttr(r.username)}" />`;
             return `<tr data-demo="${r.isDemo}">
               <td>${cb}</td>
               <td>${escapeHtml(r.username)}${tag}</td>
@@ -553,14 +508,18 @@
         syncSelectAllState();
       }
 
-      function escapeHtml(s) {
-        const d = document.createElement("div");
-        d.textContent = s;
-        return d.innerHTML;
-      }
-
-      function escapeAttr(s) {
-        return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+      async function refreshUsers() {
+        try {
+          const res = await fetch("/api/users");
+          if (!res.ok) throw new Error("bad status");
+          usersCache = await res.json();
+          hideFormAlert();
+          renderTable();
+        } catch {
+          usersCache = [];
+          renderTable();
+          showFormAlert("error", "Could not load users. Run the API: cd signup-server && npm install && npm start, then open this page from http://localhost:3000/index.html");
+        }
       }
 
       function showWelcomeEmail(user) {
@@ -598,7 +557,7 @@
         } else if (!emailRe.test(email)) {
           setFieldError("email", "Enter a valid email address.");
           ok = false;
-        } else if (emailExists(email)) {
+        } else if (emailExistsInCache(email)) {
           setFieldError("email", "This email is already registered.");
           ok = false;
         }
@@ -622,24 +581,48 @@
           : null;
       }
 
-      form.addEventListener("submit", function (e) {
+      form.addEventListener("submit", async function (e) {
         e.preventDefault();
         const data = validate();
         if (!data) return;
 
-        const list = loadRegistered();
-        list.push({
-          username: data.username,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: data.phone,
-        });
-        saveRegistered(list);
-        renderTable();
-        form.reset();
-        showFormAlert("success", "Account created. Check the welcome message below.");
-        showWelcomeEmail(data);
+        try {
+          const res = await fetch("/api/users", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firstName: data.firstName,
+              lastName: data.lastName,
+              email: data.email,
+              phone: data.phone,
+              username: data.username,
+            }),
+          });
+          let body = {};
+          try {
+            body = await res.json();
+          } catch {
+            /* ignore */
+          }
+
+          if (res.status === 409) {
+            setFieldError("email", body.error || "This email is already registered.");
+            showFormAlert("error", body.error || "This email is already registered.");
+            return;
+          }
+
+          if (!res.ok) {
+            showFormAlert("error", body.error || "Sign up failed.");
+            return;
+          }
+
+          form.reset();
+          await refreshUsers();
+          showFormAlert("success", "Account created. Check the welcome message below.");
+          showWelcomeEmail(data);
+        } catch {
+          showFormAlert("error", "Network error. Use http://localhost:3000/index.html with the server running.");
+        }
       });
 
       document.getElementById("resetBtn").addEventListener("click", function () {
@@ -669,21 +652,29 @@
         selectAll.indeterminate = n > 0 && n < boxes.length;
       }
 
-      clearSelected.addEventListener("click", function () {
+      clearSelected.addEventListener("click", async function () {
         const checked = [...memberBody.querySelectorAll(".row-cb:checked")];
         if (!checked.length) return;
-        const hidden = loadHiddenDemos();
-        const regRemoveNorm = new Set();
-        for (const cb of checked) {
-          const n = normalizeEmail(cb.getAttribute("data-email"));
-          if (DUMMY_EMAIL_SET.has(n)) hidden.add(n);
-          else regRemoveNorm.add(n);
+        const ids = checked
+          .map((cb) => parseInt(cb.getAttribute("data-id"), 10))
+          .filter((id) => Number.isInteger(id) && id > 0);
+        if (!ids.length) return;
+
+        try {
+          const res = await fetch("/api/users/remove", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids }),
+          });
+          if (!res.ok) {
+            showFormAlert("error", "Could not remove selected rows.");
+            return;
+          }
+          hideFormAlert();
+          await refreshUsers();
+        } catch {
+          showFormAlert("error", "Network error while removing rows.");
         }
-        saveHiddenDemos(hidden);
-        const list = loadRegistered().filter((u) => !regRemoveNorm.has(normalizeEmail(u.email)));
-        saveRegistered(list);
-        renderTable();
-        hideFormAlert();
       });
 
       closeInbox.addEventListener("click", function () {
@@ -698,7 +689,7 @@
         if (e.key === "Escape") emailOverlay.classList.remove("show");
       });
 
-      renderTable();
+      refreshUsers();
     })();
   </script>
 </body>
