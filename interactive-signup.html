@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Sign Up</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e8eef7;
+      --muted: #8b9cb3;
+      --accent: #3d8bfd;
+      --accent-hover: #5ba3ff;
+      --danger: #f87171;
+      --success: #34d399;
+      --radius: 12px;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(ellipse 120% 80% at 50% -20%, #1e3a5f 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 2rem 1.25rem 3rem;
+    }
+
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 2rem;
+    }
+
+    @media (min-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.5rem 1.75rem;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(61, 139, 253, 0.25);
+    }
+
+    input.invalid {
+      border-color: var(--danger);
+    }
+
+    .error-msg {
+      font-size: 0.78rem;
+      color: var(--danger);
+      margin-top: 0.25rem;
+      min-height: 1.1rem;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert.success {
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      color: var(--success);
+    }
+
+    .alert.error {
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: var(--danger);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 0.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      margin-left: 0.35rem;
+      vertical-align: middle;
+    }
+
+    .tag-demo {
+      background: rgba(139, 156, 179, 0.2);
+      color: var(--muted);
+    }
+
+    .tag-new {
+      background: rgba(61, 139, 253, 0.2);
+      color: var(--accent-hover);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .toolbar span {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* Email modal */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 100;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .inbox-card {
+      background: #fff;
+      color: #1a1a1a;
+      max-width: 420px;
+      width: 100%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+      animation: pop 0.25s ease;
+    }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .inbox-header {
+      background: #f3f4f6;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .inbox-body {
+      padding: 1.25rem 1.25rem 1.5rem;
+    }
+
+    .inbox-meta {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 1rem;
+    }
+
+    .inbox-subject {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .inbox-content {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #374151;
+    }
+
+    .inbox-footer {
+      padding: 0 1.25rem 1.25rem;
+    }
+
+    .inbox-footer button {
+      width: 100%;
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .inbox-footer button:hover {
+      background: #1d4ed8;
+    }
+
+    .note {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      max-width: 640px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Create an account</h1>
+    <p class="subtitle">Sign up is validated on this page. Duplicate emails are blocked. New members appear in the table below.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Sign up</h2>
+        <div id="formAlert" class="alert" role="status" aria-live="polite"></div>
+        <form id="signupForm" novalidate>
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" name="firstName" autocomplete="given-name" required />
+            <div class="error-msg" id="errFirstName"></div>
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input type="text" id="lastName" name="lastName" autocomplete="family-name" required />
+            <div class="error-msg" id="errLastName"></div>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required />
+            <div class="error-msg" id="errEmail"></div>
+          </div>
+          <div class="field">
+            <label for="phone">Phone number</label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="e.g. +1 555 123 4567" required />
+            <div class="error-msg" id="errPhone"></div>
+          </div>
+          <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" autocomplete="username" required />
+            <div class="error-msg" id="errUsername"></div>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn-primary">Sign up</button>
+            <button type="reset" class="btn-ghost" id="resetBtn">Clear</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Members</h2>
+        <div class="toolbar">
+          <span id="rowCount">0 rows</span>
+          <button type="button" class="btn-ghost" id="clearSelected">Remove selected</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 48px">
+                  <input type="checkbox" id="selectAll" title="Select all rows" aria-label="Select all rows" />
+                </th>
+                <th>Username</th>
+                <th>First name</th>
+                <th>Last name</th>
+              </tr>
+            </thead>
+            <tbody id="memberBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <p class="note">
+      <strong>Note:</strong> A normal website sends welcome email from a server (or a service like SendGrid). This page runs only in your browser, so after a successful sign-up you see a simulated inbox with the same message that would be emailed. Data is stored in <code>localStorage</code> so duplicate emails persist across refreshes. Removing a sample row hides it until you clear site data.
+    </p>
+  </div>
+
+  <div class="overlay" id="emailOverlay" role="dialog" aria-modal="true" aria-labelledby="inboxSubject">
+    <div class="inbox-card">
+      <div class="inbox-header">Inbox — 1 new message</div>
+      <div class="inbox-body">
+        <div class="inbox-meta" id="inboxMeta"></div>
+        <div class="inbox-subject" id="inboxSubject">Welcome!</div>
+        <div class="inbox-content" id="inboxContent"></div>
+      </div>
+      <div class="inbox-footer">
+        <button type="button" id="closeInbox">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "interactive_signup_users_v1";
+      const HIDDEN_DEMOS_KEY = "interactive_signup_hidden_demos_v1";
+
+      const DUMMY_ROWS = [
+        { username: "jdoe", firstName: "Jane", lastName: "Doe", email: "jane.doe@example.com", isDemo: true },
+        { username: "msmith", firstName: "Marcus", lastName: "Smith", email: "marcus.smith@example.com", isDemo: true },
+        { username: "klee", firstName: "Kim", lastName: "Lee", email: "kim.lee@example.com", isDemo: true },
+        { username: "adev", firstName: "Alex", lastName: "Rivera", email: "alex.rivera@example.com", isDemo: true },
+      ];
+
+      function loadRegistered() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveRegistered(list) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      }
+
+      function loadHiddenDemos() {
+        try {
+          const raw = localStorage.getItem(HIDDEN_DEMOS_KEY);
+          if (!raw) return new Set();
+          const arr = JSON.parse(raw);
+          return new Set(Array.isArray(arr) ? arr.map(normalizeEmail) : []);
+        } catch {
+          return new Set();
+        }
+      }
+
+      function saveHiddenDemos(set) {
+        localStorage.setItem(HIDDEN_DEMOS_KEY, JSON.stringify([...set]));
+      }
+
+      function normalizeEmail(email) {
+        return String(email).trim().toLowerCase();
+      }
+
+      const DUMMY_EMAIL_SET = new Set(DUMMY_ROWS.map((r) => normalizeEmail(r.email)));
+
+      function visibleDummyRows() {
+        const hidden = loadHiddenDemos();
+        return DUMMY_ROWS.filter((r) => !hidden.has(normalizeEmail(r.email))).map((r) => ({
+          ...r,
+          isDemo: true,
+        }));
+      }
+
+      function getAllRows() {
+        const registered = loadRegistered().map((u) => ({ ...u, isDemo: false }));
+        return [...visibleDummyRows(), ...registered];
+      }
+
+      function emailExists(email) {
+        const n = normalizeEmail(email);
+        if (loadRegistered().some((u) => normalizeEmail(u.email) === n)) return true;
+        if (!DUMMY_EMAIL_SET.has(n)) return false;
+        return !loadHiddenDemos().has(n);
+      }
+
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phoneRe = /^[\d\s\-+().]{10,20}$/;
+
+      const form = document.getElementById("signupForm");
+      const formAlert = document.getElementById("formAlert");
+      const memberBody = document.getElementById("memberBody");
+      const rowCountEl = document.getElementById("rowCount");
+      const selectAll = document.getElementById("selectAll");
+      const clearSelected = document.getElementById("clearSelected");
+      const emailOverlay = document.getElementById("emailOverlay");
+      const inboxMeta = document.getElementById("inboxMeta");
+      const inboxContent = document.getElementById("inboxContent");
+      const closeInbox = document.getElementById("closeInbox");
+
+      function setFieldError(id, message) {
+        const input = document.getElementById(id);
+        const err = document.getElementById("err" + id.charAt(0).toUpperCase() + id.slice(1));
+        if (message) {
+          input.classList.add("invalid");
+          err.textContent = message;
+        } else {
+          input.classList.remove("invalid");
+          err.textContent = "";
+        }
+      }
+
+      function clearErrors() {
+        ["firstName", "lastName", "email", "phone", "username"].forEach((id) => setFieldError(id, ""));
+      }
+
+      function showFormAlert(type, text) {
+        formAlert.className = "alert show " + (type === "success" ? "success" : "error");
+        formAlert.textContent = text;
+      }
+
+      function hideFormAlert() {
+        formAlert.className = "alert";
+        formAlert.textContent = "";
+      }
+
+      function renderTable() {
+        const rows = getAllRows();
+        memberBody.innerHTML = rows
+          .map((r, i) => {
+            const tag = r.isDemo
+              ? '<span class="tag tag-demo">sample</span>'
+              : '<span class="tag tag-new">signed up</span>';
+            const cb = `<input type="checkbox" class="row-cb" data-email="${escapeAttr(r.email)}" aria-label="Select ${escapeAttr(r.username)}" />`;
+            return `<tr data-demo="${r.isDemo}">
+              <td>${cb}</td>
+              <td>${escapeHtml(r.username)}${tag}</td>
+              <td>${escapeHtml(r.firstName)}</td>
+              <td>${escapeHtml(r.lastName)}</td>
+            </tr>`;
+          })
+          .join("");
+        rowCountEl.textContent = rows.length + " row" + (rows.length === 1 ? "" : "s");
+        selectAll.checked = false;
+        syncSelectAllState();
+      }
+
+      function escapeHtml(s) {
+        const d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function escapeAttr(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+      }
+
+      function showWelcomeEmail(user) {
+        inboxMeta.textContent = `From: welcome@demo.app · To: ${user.email}`;
+        inboxContent.innerHTML =
+          `<p>Hi ${escapeHtml(user.firstName)},</p>` +
+          `<p>Thanks for signing up. Your username is <strong>${escapeHtml(user.username)}</strong>.</p>` +
+          `<p>We have your phone on file as <strong>${escapeHtml(user.phone)}</strong>.</p>` +
+          `<p>— The Demo Team</p>`;
+        emailOverlay.classList.add("show");
+      }
+
+      function validate() {
+        clearErrors();
+        hideFormAlert();
+        let ok = true;
+
+        const firstName = document.getElementById("firstName").value.trim();
+        const lastName = document.getElementById("lastName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const username = document.getElementById("username").value.trim();
+
+        if (!firstName) {
+          setFieldError("firstName", "First name is required.");
+          ok = false;
+        }
+        if (!lastName) {
+          setFieldError("lastName", "Last name is required.");
+          ok = false;
+        }
+        if (!email) {
+          setFieldError("email", "Email is required.");
+          ok = false;
+        } else if (!emailRe.test(email)) {
+          setFieldError("email", "Enter a valid email address.");
+          ok = false;
+        } else if (emailExists(email)) {
+          setFieldError("email", "This email is already registered.");
+          ok = false;
+        }
+        if (!phone) {
+          setFieldError("phone", "Phone number is required.");
+          ok = false;
+        } else if (!phoneRe.test(phone)) {
+          setFieldError("phone", "Enter 10–20 digits or common phone symbols.");
+          ok = false;
+        }
+        if (!username) {
+          setFieldError("username", "Username is required.");
+          ok = false;
+        } else if (username.length < 3) {
+          setFieldError("username", "Username must be at least 3 characters.");
+          ok = false;
+        }
+
+        return ok
+          ? { firstName, lastName, email, phone, username }
+          : null;
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const data = validate();
+        if (!data) return;
+
+        const list = loadRegistered();
+        list.push({
+          username: data.username,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+        });
+        saveRegistered(list);
+        renderTable();
+        form.reset();
+        showFormAlert("success", "Account created. Check the welcome message below.");
+        showWelcomeEmail(data);
+      });
+
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        clearErrors();
+        hideFormAlert();
+      });
+
+      selectAll.addEventListener("change", function () {
+        memberBody.querySelectorAll(".row-cb").forEach((cb) => {
+          cb.checked = selectAll.checked;
+        });
+      });
+
+      memberBody.addEventListener("change", function (e) {
+        if (e.target.classList.contains("row-cb")) syncSelectAllState();
+      });
+
+      function syncSelectAllState() {
+        const boxes = [...memberBody.querySelectorAll(".row-cb")];
+        if (!boxes.length) {
+          selectAll.checked = false;
+          selectAll.indeterminate = false;
+          return;
+        }
+        const n = boxes.filter((b) => b.checked).length;
+        selectAll.checked = n === boxes.length;
+        selectAll.indeterminate = n > 0 && n < boxes.length;
+      }
+
+      clearSelected.addEventListener("click", function () {
+        const checked = [...memberBody.querySelectorAll(".row-cb:checked")];
+        if (!checked.length) return;
+        const hidden = loadHiddenDemos();
+        const regRemoveNorm = new Set();
+        for (const cb of checked) {
+          const n = normalizeEmail(cb.getAttribute("data-email"));
+          if (DUMMY_EMAIL_SET.has(n)) hidden.add(n);
+          else regRemoveNorm.add(n);
+        }
+        saveHiddenDemos(hidden);
+        const list = loadRegistered().filter((u) => !regRemoveNorm.has(normalizeEmail(u.email)));
+        saveRegistered(list);
+        renderTable();
+        hideFormAlert();
+      });
+
+      closeInbox.addEventListener("click", function () {
+        emailOverlay.classList.remove("show");
+      });
+
+      emailOverlay.addEventListener("click", function (e) {
+        if (e.target === emailOverlay) emailOverlay.classList.remove("show");
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") emailOverlay.classList.remove("show");
+      });
+
+      renderTable();
+    })();
+  </script>
+</body>
+</html>

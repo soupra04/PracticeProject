@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Priyajali Roy</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      overflow-y: auto;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(145deg, #1e1b4b 0%, #4c1d95 45%, #831843 100%);
+      background-attachment: fixed;
+      color: #faf5ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: max(1.25rem, env(safe-area-inset-top, 0px))
+        max(1.25rem, env(safe-area-inset-right, 0px))
+        max(1.25rem, env(safe-area-inset-bottom, 0px))
+        max(1.25rem, env(safe-area-inset-left, 0px));
+      overflow-x: hidden;
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 100%;
+      flex: 1 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-block: 0.5rem;
+    }
+
+    @media (max-height: 520px) {
+      .page-shell {
+        justify-content: flex-start;
+        padding-top: 0.25rem;
+      }
+    }
+
+    #celebration {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 40;
+      overflow: hidden;
+    }
+
+    .confetti {
+      position: absolute;
+      top: -12px;
+      width: 10px;
+      height: 14px;
+      border-radius: 2px;
+      opacity: 1;
+      animation: confetti-fall 2.8s ease-out forwards;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) translateX(var(--drift, 0px)) rotate(var(--spin, 360deg));
+        opacity: 0.15;
+      }
+    }
+
+    .card {
+      text-align: center;
+      width: min(100%, 28rem);
+      max-width: 100%;
+      padding: clamp(1.25rem, 4vw, 2rem) clamp(1rem, 4vw, 1.75rem);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(12px);
+      transition: box-shadow 0.3s ease;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+
+    .card.is-celebrating {
+      animation: card-glow 1.2s ease-out 2;
+      box-shadow:
+        0 0 0 3px rgba(250, 204, 21, 0.5),
+        0 20px 50px rgba(0, 0, 0, 0.35),
+        0 0 60px rgba(52, 211, 153, 0.35);
+    }
+
+    @keyframes card-glow {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.03);
+      }
+    }
+
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: clamp(1.15rem, 4vw, 1.35rem);
+      font-weight: 600;
+      color: #e9d5ff;
+    }
+
+    .question {
+      font-size: clamp(1.35rem, 5vw, 1.65rem);
+      font-weight: 700;
+      margin: 1.25rem 0 1.75rem;
+      line-height: 1.35;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: clamp(0.65rem, 3vw, 1rem);
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 3.25rem;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      font-weight: 600;
+      padding: 0.6rem clamp(1.1rem, 5vw, 1.75rem);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-yes {
+      background: linear-gradient(135deg, #34d399, #059669);
+      color: #064e3b;
+      box-shadow: 0 8px 24px rgba(52, 211, 153, 0.4);
+    }
+
+    .btn-yes:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(52, 211, 153, 0.5);
+    }
+
+    .btn-no {
+      position: relative;
+      background: linear-gradient(135deg, #f87171, #dc2626);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(248, 113, 113, 0.35);
+      z-index: 1;
+      transition: left 0.22s ease-out, top 0.22s ease-out, transform 0.22s ease-out;
+    }
+
+    .btn-no.is-floating {
+      position: fixed;
+      z-index: 100;
+    }
+
+    .btn-no.is-dodging {
+      pointer-events: none;
+    }
+
+    .message {
+      display: none;
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: rgba(52, 211, 153, 0.2);
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      border-radius: 14px;
+      font-size: clamp(0.95rem, 3.5vw, 1.05rem);
+      line-height: 1.55;
+      color: #d1fae5;
+      text-align: center;
+    }
+
+    .message.is-visible {
+      display: block;
+      animation: pop 0.45s ease;
+    }
+
+    .celebration-banner {
+      display: none;
+      margin-top: 1rem;
+      font-size: clamp(1.35rem, 6vw, 2rem);
+      line-height: 1.35;
+      letter-spacing: clamp(0.02em, 1vw, 0.15em);
+      word-break: break-word;
+    }
+
+    .celebration-banner.is-visible {
+      display: block;
+      animation: wiggle 0.45s ease 8 alternate;
+    }
+
+    @keyframes wiggle {
+      from {
+        transform: rotate(-4deg) scale(1);
+      }
+      to {
+        transform: rotate(4deg) scale(1.05);
+      }
+    }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .hint {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: rgba(250, 245, 255, 0.55);
+    }
+  </style>
+</head>
+<body>
+  <div id="celebration" aria-hidden="true"></div>
+  <div class="page-shell">
+  <div class="card" id="mainCard">
+    <h1>Hi, Priyajali Roy</h1>
+    <p class="question">do you love me?</p>
+    <div class="buttons">
+      <button type="button" class="btn btn-yes" id="btnYes">Yes</button>
+      <button type="button" class="btn btn-no" id="btnNo" aria-label="No">No</button>
+    </div>
+    <p class="hint">Try the other button if you dare…</p>
+    <div class="celebration-banner" id="celebrationBanner" aria-hidden="true">🎉 ✨ 💖 ✨ 🎉</div>
+    <div class="message" id="congrats" role="status" aria-live="polite"></div>
+  </div>
+  </div>
+
+  <script>
+    const btnYes = document.getElementById("btnYes");
+    const btnNo = document.getElementById("btnNo");
+    const congrats = document.getElementById("congrats");
+    const celebration = document.getElementById("celebration");
+    const mainCard = document.getElementById("mainCard");
+    const celebrationBanner = document.getElementById("celebrationBanner");
+
+    const winMessage =
+      "You have a great choice for Selecting Soupra, He is great guy";
+
+    const confettiColors = [
+      "#f472b6",
+      "#fbbf24",
+      "#34d399",
+      "#60a5fa",
+      "#c084fc",
+      "#fb7185",
+      "#fde047",
+      "#2dd4bf",
+    ];
+
+    function launchConfetti() {
+      celebration.innerHTML = "";
+      const count = 72;
+      for (let i = 0; i < count; i++) {
+        const piece = document.createElement("span");
+        piece.className = "confetti";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background = confettiColors[i % confettiColors.length];
+        piece.style.animationDelay = Math.random() * 0.45 + "s";
+        piece.style.setProperty("--drift", (Math.random() - 0.5) * 240 + "px");
+        piece.style.setProperty("--spin", Math.random() * 1080 + "deg");
+        if (Math.random() > 0.5) {
+          piece.style.borderRadius = "50%";
+          piece.style.width = "8px";
+          piece.style.height = "8px";
+        }
+        celebration.appendChild(piece);
+      }
+      window.setTimeout(() => {
+        celebration.innerHTML = "";
+      }, 3500);
+    }
+
+    btnYes.addEventListener("click", () => {
+      congrats.textContent = winMessage;
+      congrats.classList.add("is-visible");
+      celebrationBanner.classList.add("is-visible");
+      celebrationBanner.setAttribute("aria-hidden", "false");
+      mainCard.classList.add("is-celebrating");
+      launchConfetti();
+      window.setTimeout(() => mainCard.classList.remove("is-celebrating"), 2400);
+    });
+
+    /** Back in the row next to Yes (normal document flow). */
+    function applyNoButtonHome() {
+      btnNo.classList.remove("is-floating");
+      btnNo.style.position = "";
+      btnNo.style.left = "";
+      btnNo.style.top = "";
+      btnNo.style.right = "";
+      btnNo.style.bottom = "";
+      btnNo.style.transform = "";
+    }
+
+    const AWAY_MS = 700;
+    const REARM_MS = 380;
+
+    let noDodgeBusy = false;
+    let noReturnTimer = null;
+    let noRearmTimer = null;
+
+    function unlockNoButton() {
+      btnNo.classList.remove("is-dodging");
+    }
+
+    function lockNoButton() {
+      btnNo.classList.add("is-dodging");
+    }
+
+    function dodgeNoAwayAndReturn() {
+      if (noDodgeBusy) return;
+      noDodgeBusy = true;
+      lockNoButton();
+
+      const pad = 16;
+      const w = btnNo.offsetWidth;
+      const h = btnNo.offsetHeight;
+      const maxX = Math.max(pad, window.innerWidth - w - pad);
+      const maxY = Math.max(pad, window.innerHeight - h - pad);
+      const x = pad + Math.random() * (maxX - pad);
+      const y = pad + Math.random() * (maxY - pad);
+      btnNo.classList.add("is-floating");
+      btnNo.style.position = "fixed";
+      btnNo.style.left = x + "px";
+      btnNo.style.top = y + "px";
+      btnNo.style.transform = "none";
+
+      clearTimeout(noReturnTimer);
+      noReturnTimer = setTimeout(() => {
+        applyNoButtonHome();
+        clearTimeout(noRearmTimer);
+        noRearmTimer = setTimeout(() => {
+          unlockNoButton();
+          noDodgeBusy = false;
+        }, REARM_MS);
+      }, AWAY_MS);
+    }
+
+    /* Desktop: moving onto the button = trying to click */
+    btnNo.addEventListener("mouseenter", () => dodgeNoAwayAndReturn());
+
+    /* Keyboard focus */
+    btnNo.addEventListener("focus", () => dodgeNoAwayAndReturn());
+
+    /* Mobile / pen: no hover — dodge as soon as they touch */
+    btnNo.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault();
+        dodgeNoAwayAndReturn();
+      },
+      { passive: false }
+    );
+
+    /* Extra safety: never register a real click on No */
+    btnNo.addEventListener("click", (e) => {
+      e.preventDefault();
+    });
+
+    window.addEventListener("load", () => {
+      applyNoButtonHome();
+      unlockNoButton();
+    });
+
+    window.addEventListener("resize", () => {
+      if (!noDodgeBusy) applyNoButtonHome();
+    });
+  </script>
+</body>
+</html>

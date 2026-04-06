@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Case Creation</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">◇</span>
+        <div>
+          <h1>Test Case Creation</h1>
+          <p class="tagline">Structured test cases from your requirement documents</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="panel input-panel" aria-labelledby="input-heading">
+        <h2 id="input-heading">Requirements</h2>
+        <p class="hint">
+          Paste text or upload a file (<kbd>.txt</kbd>, <kbd>.md</kbd>, <kbd>.pdf</kbd>). Bullets, numbered items, and
+          <em>shall / must / should</em> lines are treated as separate requirements when possible.
+        </p>
+
+        <label class="file-label">
+          <input type="file" id="fileInput" accept=".txt,.md,.pdf,text/plain,application/pdf" />
+          <span class="file-btn">Choose document</span>
+          <span class="file-name" id="fileName">No file selected</span>
+        </label>
+
+        <label class="sr-only" for="reqText">Requirement text</label>
+        <textarea
+          id="reqText"
+          rows="14"
+          placeholder="Example:&#10;FR-001: The system shall allow users to reset their password via email.&#10;FR-002: Invalid email format must show a validation message.&#10;- Session expires after 30 minutes of inactivity."
+        ></textarea>
+
+        <div class="actions">
+          <button type="button" class="btn primary" id="generateBtn">Generate test cases</button>
+          <span class="status" id="status" role="status"></span>
+        </div>
+      </section>
+
+      <section class="panel results-panel" aria-labelledby="results-heading">
+        <div class="results-head">
+          <h2 id="results-heading">Generated test cases</h2>
+          <div class="export-btns" id="exportBtns" hidden>
+            <button type="button" class="btn ghost" id="exportJson">JSON</button>
+            <button type="button" class="btn ghost" id="exportCsv">CSV</button>
+          </div>
+        </div>
+        <div class="summary" id="summary" hidden></div>
+        <div class="table-wrap" id="tableWrap" hidden>
+          <table class="tc-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Priority</th>
+                <th>Title</th>
+                <th>Feature</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="detail" id="detail" hidden>
+          <h3 id="detailTitle"></h3>
+          <dl class="meta">
+            <dt>Requirement ref</dt><dd id="dRef"></dd>
+            <dt>Traceability</dt><dd id="dTrace"></dd>
+          </dl>
+          <h4>Preconditions</h4>
+          <p id="dPre"></p>
+          <h4>Steps</h4>
+          <ol id="dSteps"></ol>
+          <h4>Expected result</h4>
+          <p id="dExp"></p>
+        </div>
+        <p class="empty" id="emptyMsg">Generated cases will appear here.</p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Runs locally — requirement text is sent only to your machine when you use this app.</p>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

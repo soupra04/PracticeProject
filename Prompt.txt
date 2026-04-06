@@ -1,0 +1,3 @@
+in this directory create a basic portfolio page for Soupra Maityusing HTML CSS and javaScript add CSS Style for layout and design . use JavaScript for simple interactivity.like a button click even,Use the profile image I am pasting and extra details from my resume to auto generate content. Add a featured projects section with my 33 best project and breief details for me@IMG_0868 (2).jpg @Soupramaity_Resume_Updated.pdf 
+
+To Create an HTML Page
